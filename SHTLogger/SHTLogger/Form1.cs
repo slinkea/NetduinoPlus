@@ -59,7 +59,14 @@ namespace SHTLogger
       {
         _addDataRunner.Start();
       }
+    }
 
+    private void StopTrending()
+    {
+      if (_addDataRunner.IsAlive == true)
+      {
+        _addDataRunner.Suspend();
+      }
     }
 
     /// Main loop for the thread that adds data to the chart.
