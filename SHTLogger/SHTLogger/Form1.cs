@@ -3,14 +3,20 @@ using System.Threading;
 using System;
 using System.Windows.Forms.DataVisualization.Charting;
 using System.Drawing;
+using System.Net.Sockets;
+using System.Net;
+using System.Text;
 
 namespace SHTLogger
 {
   public partial class Form1 : Form
   {
+    private Thread _netThread;
     private Thread _addDataRunner;
     public delegate void AddDataDelegate();
     public AddDataDelegate _addDataDel;
+    private Socket clientSocket = null;
+    public delegate void DataReceivedDelegate(string rawData);
 
     public Form1()
     {
@@ -19,18 +25,6 @@ namespace SHTLogger
     }
 
     private void Form1_Load(object sender, System.EventArgs e)
-    {
-      // create the Adding Data Thread but do not start until start button clicked
-      ThreadStart addDataThreadStart = new ThreadStart(AddDataThreadLoop);
-      _addDataRunner = new Thread(addDataThreadStart);
-
-      // create a delegate for adding data
-      _addDataDel += new AddDataDelegate(AddData);
-
-      StartTrending();
-    }
-
-    private void StartTrending()
     {
       // Predefine the viewing area of the chart
       DateTime minValue = DateTime.Now;
@@ -50,80 +44,90 @@ namespace SHTLogger
       newSeries.XValueType = ChartValueType.DateTime;
       chart1.Series.Add(newSeries);
 
-      // start worker threads.
-      if (_addDataRunner.IsAlive == true)
-      {
-        _addDataRunner.Resume();
-      }
-      else
-      {
-        _addDataRunner.Start();
-      }
+      //////////////////////////////////////////////////////////////////////////
+
+      ThreadStart addDataFromNetduino = new ThreadStart(AddDataFromNetduino);
+      _netThread = new Thread(new ThreadStart(addDataFromNetduino));
+      _netThread.IsBackground = true;
+      _netThread.Start();
     }
 
-    private void StopTrending()
+    private void AddDataFromNetduino()
     {
-      if (_addDataRunner.IsAlive == true)
+      string rawData = "";
+
+      using (System.Net.Sockets.Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
       {
-        _addDataRunner.Suspend();
+        socket.Bind(new IPEndPoint(IPAddress.Any, 8000));
+        socket.Listen(10);
+
+        while (true)
+        {
+          //toolStripStatusLabel1.Text = "Accepting connections...";
+          clientSocket = socket.Accept();  //This call is "blocking" as it will wait for a connection, which also means the thread hangs around
+          //toolStripStatusLabel1.Text = "Connection Accepted!";
+
+          using (clientSocket)
+          {
+            while (SocketConnected(clientSocket))
+            {
+              int availablebytes = clientSocket.Available;
+              byte[] buffer = new byte[availablebytes];  // i ignored all the buffer overflow prevention stuff in the web server code
+              clientSocket.Receive(buffer);
+
+              if (buffer.Length > 0) // make sure there's something to add
+              {
+                rawData = Encoding.UTF8.GetString(buffer);
+                //toolStripStatusLabel1.Text = "Adding:" + s;
+
+                AddDataPoint(rawData);
+              }
+            }
+          }
+        }
       }
     }
 
-    /// Main loop for the thread that adds data to the chart.
-    /// The main purpose of this function is to Invoke AddData
-    /// function every 1000ms (1 second).
-    private void AddDataThreadLoop()
+    public void AddDataPoint(string rawData)
     {
-      while (true)
-      {
-        chart1.Invoke(_addDataDel);
+      string[] sa = rawData.Split('|');
+      int? i = null;
 
-        Thread.Sleep(1000);
+      try
+      {
+        i = int.Parse(sa[0]);
+      }
+      catch { }
+
+      if (i != null)
+      {
+        if (this.chart1.InvokeRequired)
+        {
+          DataReceivedDelegate d = new DataReceivedDelegate(AddDataPoint);
+
+          this.Invoke(d, new object[] { rawData });
+        }
+        else
+        {
+          chart1.Series["Series1"].Points.AddY(i);
+        }
       }
     }
 
-    public void AddData()
+    static bool SocketConnected(Socket s)
     {
-      DateTime timeStamp = DateTime.Now;
-
-      foreach (Series ptSeries in chart1.Series)
+      bool ret = true;
+      bool part1 = s.Poll(1000, SelectMode.SelectRead);
+      bool part2 = (s.Available == 0);
+      
+      if (part1 & part2)
       {
-        AddNewPoint(timeStamp, ptSeries);
+        ret = false;
       }
+
+      return ret;
     }
 
-    /// The AddNewPoint function is called for each series in the chart when
-    /// new points need to be added.  The new point will be placed at specified
-    /// X axis (Date/Time) position with a Y value in a range +/- 1 from the previous
-    /// data point's Y value, and not smaller than zero.
-    public void AddNewPoint(DateTime timeStamp, System.Windows.Forms.DataVisualization.Charting.Series ptSeries)
-    {
-      double newVal = 0;
-
-      if (ptSeries.Points.Count > 0)
-      {
-        newVal = 20; //ptSeries.Points[ptSeries.Points.Count - 1].YValues[0] + ((rand.NextDouble() * 2) - 1);
-      }
-
-      if (newVal < 0)
-        newVal = 0;
-
-      // Add new data point to its series.
-      ptSeries.Points.AddXY(timeStamp.ToOADate(), 20 /*rand.Next(10, 20)*/);
-
-      // remove all points from the source series older than 1.5 minutes.
-      double removeBefore = timeStamp.AddSeconds((double)(90) * (-1)).ToOADate();
-      //remove oldest values to maintain a constant number of data points
-      while (ptSeries.Points[0].XValue < removeBefore)
-      {
-        ptSeries.Points.RemoveAt(0);
-      }
-
-      chart1.ChartAreas[0].AxisX.Minimum = ptSeries.Points[0].XValue;
-      chart1.ChartAreas[0].AxisX.Maximum = DateTime.FromOADate(ptSeries.Points[0].XValue).AddMinutes(2).ToOADate();
-
-      chart1.Invalidate();
-    }
 
     /// <summary>
     /// Clean up any resources being used.
@@ -131,12 +135,6 @@ namespace SHTLogger
     /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
     protected override void Dispose(bool disposing)
     {
-      if ((_addDataRunner.ThreadState & ThreadState.Suspended) == ThreadState.Suspended)
-      {
-        _addDataRunner.Resume();
-      }
-      _addDataRunner.Abort();
-
       if (disposing)
       {
         if (components != null)
@@ -145,6 +143,19 @@ namespace SHTLogger
         }
       }
       base.Dispose(disposing);
+    }
+
+    private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+    {
+      if (_netThread != null && _netThread.IsAlive)
+      {
+        if ((_netThread.ThreadState & ThreadState.Suspended) == ThreadState.Suspended)
+        {
+          _netThread.Resume();
+        }
+
+        _netThread.Abort();
+      }
     }
   }
 }
