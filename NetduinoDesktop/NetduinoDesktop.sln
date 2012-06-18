@@ -2,6 +2,9 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Netduino.Desktop", "NetduinoDesktop\Netduino.Desktop.csproj", "{2C47825E-6A10-4388-BB42-CC50D8A53C91}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BFFAF714-7260-4EEB-9F65-0AE6CF0CD1BF} = {BFFAF714-7260-4EEB-9F65-0AE6CF0CD1BF}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Netduino.Communication", "NetduinoCommunication\Netduino.Communication.csproj", "{BFFAF714-7260-4EEB-9F65-0AE6CF0CD1BF}"
 EndProject

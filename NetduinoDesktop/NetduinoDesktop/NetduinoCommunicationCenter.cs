@@ -10,11 +10,13 @@ using Netduino.Communication;
 using System.Threading;
 using System.Diagnostics;
 using System.Globalization;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace Netduino.DesktopMessenger
 {
     public partial class NetduinoCommunicationCenter : Form
     {
+        private DateTime minValue, maxValue;
         private CommunicateWithNetduino _ethernetCommunication = CommunicateWithNetduino.GetInstance();
 
         public NetduinoCommunicationCenter()
@@ -43,9 +45,28 @@ namespace Netduino.DesktopMessenger
 
         private void TalkToNetduino_Load(object sender, EventArgs e)
         {
-            _ethernetCommunication.EventHandlerMessageReceived += new EventHandler<MessageEventArgs>(OnMessageReceived);
-            _ethernetCommunication.EventHandlerStatusUpdate += new EventHandler<MessageEventArgs>(OnStatusUpdate);
-            _ethernetCommunication.StartListening((ISynchronizeInvoke)this);
+          // Predefine the viewing area of the chart
+          minValue = DateTime.Now;
+          maxValue = minValue.AddSeconds(30);
+
+          chart1.ChartAreas[0].AxisX.Minimum = minValue.ToOADate();
+          chart1.ChartAreas[0].AxisX.Maximum = maxValue.ToOADate();
+
+          // Reset number of series in the chart.
+          chart1.Series.Clear();
+
+          Series newSeries = new Series("Series1");
+          newSeries.ChartType = SeriesChartType.Line;
+          newSeries.BorderWidth = 1;
+          //newSeries.Color = Color.FromArgb(224, 64, 10);
+          newSeries.ShadowOffset = 1;
+          newSeries.XValueType = ChartValueType.DateTime;
+          chart1.Series.Add(newSeries);
+
+
+          _ethernetCommunication.EventHandlerMessageReceived += new EventHandler<MessageEventArgs>(OnMessageReceived);
+          _ethernetCommunication.EventHandlerStatusUpdate += new EventHandler<MessageEventArgs>(OnStatusUpdate);
+          _ethernetCommunication.StartListening((ISynchronizeInvoke)this);
         }
 
         private void OnMessageReceived(object sender, MessageEventArgs e)
@@ -68,7 +89,7 @@ namespace Netduino.DesktopMessenger
 
             if (temperature != null)
             {
-              Thread.Sleep(1);
+              AddTemperaturePoint(chart1.Series[0], temperature);
             }
 
             //Move the scroll position to the end of the text
@@ -81,6 +102,25 @@ namespace Netduino.DesktopMessenger
                 buttonSend.Enabled = true;
                 SetTimeOnNetdino();
             }
+        }
+
+        public void AddTemperaturePoint(Series series, double? temperature)
+        {
+          DateTime timeStamp = DateTime.Now;
+
+          series.Points.AddXY(timeStamp.ToOADate(), temperature);
+
+          double removeBefore = timeStamp.AddSeconds((double)(90) * (-1)).ToOADate();
+
+          while (series.Points[0].XValue < removeBefore)
+          {
+            series.Points.RemoveAt(0);
+          }
+
+          chart1.ChartAreas[0].AxisX.Minimum = series.Points[0].XValue;
+          chart1.ChartAreas[0].AxisX.Maximum = DateTime.FromOADate(series.Points[0].XValue).AddMinutes(2).ToOADate();
+
+          chart1.Invalidate();
         }
 
         private void OnStatusUpdate(object sender, MessageEventArgs e)
