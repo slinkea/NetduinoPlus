@@ -7,6 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Netduino.Communication;
+using System.Threading;
+using System.Diagnostics;
+using System.Globalization;
 
 namespace Netduino.DesktopMessenger
 {
@@ -48,6 +51,25 @@ namespace Netduino.DesktopMessenger
         private void OnMessageReceived(object sender, MessageEventArgs e)
         {
             textBoxReceiveMessage.Text = textBoxReceiveMessage.Text + e.Message + "\r\n";
+
+            string[] data = e.Message.Split('|');
+            double? temperature = null;
+            double? humidity = null;
+
+            try
+            {
+              temperature = Convert.ToDouble(data[0], System.Globalization.CultureInfo.InvariantCulture);
+              humidity = Convert.ToDouble(data[1], System.Globalization.CultureInfo.InvariantCulture);
+            }
+            catch (Exception ex)
+            {
+              Debug.Print(ex.StackTrace);
+            }
+
+            if (temperature != null)
+            {
+              Thread.Sleep(1);
+            }
 
             //Move the scroll position to the end of the text
             textBoxReceiveMessage.SelectionStart = textBoxReceiveMessage.Text.Length;
