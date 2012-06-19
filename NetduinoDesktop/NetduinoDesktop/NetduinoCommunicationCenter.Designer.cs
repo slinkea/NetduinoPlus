@@ -161,8 +161,8 @@
       chartArea1.AxisY.MajorGrid.Interval = 10D;
       chartArea1.AxisY.MajorGrid.LineColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
       chartArea1.AxisY.MajorTickMark.Interval = 10D;
-      chartArea1.AxisY.Maximum = 30D;
-      chartArea1.AxisY.Minimum = -30D;
+      chartArea1.AxisY.Maximum = 35D;
+      chartArea1.AxisY.Minimum = 15D;
       chartArea1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(165)))), ((int)(((byte)(191)))), ((int)(((byte)(228)))));
       chartArea1.BackGradientStyle = System.Windows.Forms.DataVisualization.Charting.GradientStyle.TopBottom;
       chartArea1.BackSecondaryColor = System.Drawing.Color.White;
