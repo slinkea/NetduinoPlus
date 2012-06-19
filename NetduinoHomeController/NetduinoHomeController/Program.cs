@@ -29,7 +29,7 @@ namespace Netduino.Home.Controller
           double temperature = SHT15.GetTemperatureCelcius();
           double humidity = SHT15.GetHumidity();
 
-          EthernetCommunication.SendMessage(_temperature.ToString() + "|" + humidity.ToString());
+          EthernetCommunication.SendMessage(temperature.ToString() + "|" + humidity.ToString());
         }
 
         private static void OnMessageReceived(string message)

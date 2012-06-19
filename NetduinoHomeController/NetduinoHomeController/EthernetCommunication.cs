@@ -225,26 +225,30 @@ namespace Netduino.Home.Controller
         {
             if (_hostAddress != null && _port > 0)
             {
-                using (System.Net.Sockets.Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+              using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+              {
+                var hostAddress = IPAddress.Parse(_hostAddress);
+                var endpoint = new IPEndPoint(hostAddress, _port);
+
+                try
                 {
+                  socket.Connect(endpoint);
 
-                    IPHostEntry entry = Dns.GetHostEntry(_hostAddress);
-                    IPAddress address = entry.AddressList[0];
-                    IPEndPoint endpoint = new IPEndPoint(address, _port);
+                  socket.Send(Encoding.UTF8.GetBytes(message));
+                  Debug.Print(message);
 
-                    try
-                    {
-                        socket.Connect(endpoint);
-                        socket.Send(Encoding.UTF8.GetBytes(message));
-                        socket.Close();
-                        Debug.Print(message);
-                    }
-                    catch (SocketException se)
-                    {
-                        Debug.Print("Socket Exception!  Probably no server or bad ip?");
-                        Debug.Print(se.StackTrace);
-                    }
+                  socket.Close();
                 }
+                catch (SocketException se)
+                {
+                  Debug.Print("Unable to connect to Netduino");
+                  Debug.Print(se.ToString());
+                }
+                catch (Exception e)
+                {
+                  Debug.Print(e.ToString());
+                }
+              } 
             }
         }
         #endregion
