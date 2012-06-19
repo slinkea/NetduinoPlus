@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using Microsoft.SPOT;
 
 namespace Netduino.Home.Controller
 {
@@ -15,8 +16,8 @@ namespace Netduino.Home.Controller
             EthernetCommunication.EventHandlerMessageReceived += new MessageEventHandler(OnMessageReceived);
             EthernetCommunication.SendMessage("Communications are initialized.");
 
-            SHT15.Init();
-            Time.RunRepetitively(OnGetTemperature, 3000);
+            //SHT15.Init();
+            //Time.RunRepetitively(OnGetTemperature, 3000);
 
             while (!_exitProgram)
             {
@@ -34,6 +35,8 @@ namespace Netduino.Home.Controller
 
         private static void OnMessageReceived(string message)
         {
+            Debug.Print(message);
+
             string[] parts = message.Split(' ');
             switch(parts[0].ToUpper()) 
             {

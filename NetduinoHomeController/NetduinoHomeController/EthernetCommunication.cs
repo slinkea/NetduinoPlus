@@ -131,7 +131,8 @@ namespace Netduino.Home.Controller
 
         public static void SendMessage(string message)
         {
-            GetInstance().SendEthernetMessage(message);
+          EthernetCommunication instance = GetInstance();
+            //GetInstance().SendEthernetMessage(message);
         }
         #endregion
 
@@ -140,54 +141,80 @@ namespace Netduino.Home.Controller
         {
             bool connectionNotClosedResetOrTerminated = !socket.Poll(1000, SelectMode.SelectRead);
             bool socketHasDataAvailableToRead = (socket.Available != 0);
-            return (connectionNotClosedResetOrTerminated || socketHasDataAvailableToRead);
+
+            return connectionNotClosedResetOrTerminated || socketHasDataAvailableToRead;
         }
 
         private void ReceiveSocketsInListeningThread()
         {
-            string receiveMessage = "";
-            bool exitProgram = false;
+          int errorCode = 0;
+          string receiveMessage = "";
+          bool exitProgram = false;
 
             using (System.Net.Sockets.Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
             {
                 socket.Bind(new IPEndPoint(IPAddress.Any, _port));
                 socket.Listen(10);
 
+                Debug.Print("Waiting for connection...");
+
                 while (!exitProgram)
                 {
-                    Debug.Print("Waiting for connection...");
-
                     try
                     {
-                      _clientSocket = socket.Accept();  //This call is "blocking" and will will wait for a connection, which also means the thread hangs around
+                      _clientSocket = socket.Accept();
                     }
                     catch (SocketException se)
                     {
-                      Debug.Print("Socket Exception!  Ethernet cable disconnected?");
-                      Debug.Print(se.StackTrace);
+                      if (se.ErrorCode != errorCode && se.ErrorCode == 10050)
+                      {
+                        errorCode = se.ErrorCode;
+
+                        Debug.Print("Network is down.");
+                      }
+                      else
+                      {
+                        Debug.Print(se.StackTrace);
+                      }
+
+                      Thread.Sleep(1000);
+                      continue;
                     }
 
-                    Debug.Print( "Connection Accepted!");
-
-                    using (_clientSocket)
+                    if (_clientSocket != null)
                     {
-                        while (IsSocketConnected(_clientSocket))
+                      Debug.Print("Connection Accepted!");
+
+                      bool polled = _clientSocket.Poll(1000, SelectMode.SelectRead);
+
+
+
+                      while (_clientSocket.Available != 0)
+                      {
+                        int availablebytes = _clientSocket.Available;
+                        byte[] buffer = new byte[availablebytes];
+
+                        try
                         {
-                            int availablebytes = _clientSocket.Available;
-                            byte[] buffer = new byte[availablebytes];
-                            _clientSocket.Receive(buffer);
-                            if (buffer.Length > 0)
-                            {
-                                receiveMessage = new string(Encoding.UTF8.GetChars(buffer));
-                                RaiseMessageReceivedEvent(receiveMessage);
-                                if (receiveMessage.ToUpper() == "EXIT")
-                                {
-                                    exitProgram = true;
-                                }
-                            }
-                            
+                          _clientSocket.Receive(buffer);
                         }
-                    }
+                        catch (SocketException se)
+                        {
+                          Debug.Print("Socket Exception!  _clientSocket.Receive(buffer)");
+                          Debug.Print(se.StackTrace);
+                        }
+
+                        if (buffer.Length > 0)
+                        {
+                          receiveMessage = new string(Encoding.UTF8.GetChars(buffer));
+                          RaiseMessageReceivedEvent(receiveMessage);
+                          if (receiveMessage.ToUpper() == "EXIT")
+                          {
+                            exitProgram = true;
+                          }
+                        }
+                      }
+                    }               
                 }
             }
         }
@@ -241,7 +268,7 @@ namespace Netduino.Home.Controller
                 }
                 catch (SocketException se)
                 {
-                  Debug.Print("Unable to connect to Netduino");
+                  Debug.Print("Unable to connect to Desktop App");
                   Debug.Print(se.ToString());
                 }
                 catch (Exception e)
