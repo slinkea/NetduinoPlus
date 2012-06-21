@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("NetduinoApplication1")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("ThingSpeakClient")]
+[assembly: AssemblyDescription("Program to update a ThingSpeak Channel using HTTP POST and the Netduino Plus")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("NetduinoApplication1")]
-[assembly: AssemblyCopyright("Copyright ©  2010")]
+[assembly: AssemblyCompany("ioBridge, Inc.")]
+[assembly: AssemblyProduct("ThingSpeakClient")]
+[assembly: AssemblyCopyright("Copyright ©2011 ThingSpeak")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
