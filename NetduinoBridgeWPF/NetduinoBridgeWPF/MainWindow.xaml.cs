@@ -17,6 +17,7 @@ namespace NetduinoBridgeWPF
         private static Action<System.Action> executor = action => action();
         private CommunicateWithNetduino _ethernetCommunication = CommunicateWithNetduino.GetInstance();
         private static System.Timers.Timer aTimer;
+        private static System.Timers.Timer aTemperatureTimer;
 
 
         public MainWindow()
@@ -33,11 +34,21 @@ namespace NetduinoBridgeWPF
             aTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
             aTimer.AutoReset = false;
             aTimer.Enabled = true;
+
+            aTemperatureTimer = new System.Timers.Timer(5000);
+            aTemperatureTimer.Elapsed += new ElapsedEventHandler(OnTimedTemperatureEvent);
+            aTemperatureTimer.Enabled = true;
         }
 
         private void OnTimedEvent(object source, ElapsedEventArgs e)
         {
             SendTimeToNetdino();
+        }
+
+        private void OnTimedTemperatureEvent(object source, ElapsedEventArgs e)
+        {
+            _ethernetCommunication.SendMessage("TEMPERATURE");
+            _ethernetCommunication.SendMessage("HUMIDITY");
         }
 
         private void OnMessageReceived(object sender, MessageEventArgs e)
