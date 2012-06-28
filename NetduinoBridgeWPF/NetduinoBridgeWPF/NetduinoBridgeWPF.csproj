@@ -36,6 +36,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ControlThink.ZWave, Version=1.3.0.23, Culture=neutral, PublicKeyToken=519b100b18e2bf7d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\ControlThink.ZWave.dll</HintPath>
+    </Reference>
     <Reference Include="PCMonitorCloud, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b091260bcabfd8b0, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Debug\PCMonitorCloud.dll</HintPath>
