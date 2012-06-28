@@ -14,6 +14,7 @@ namespace Netduino.Controller
 
         private static SHT11_GPIO_IOProvider SHT11_IO = new SHT11_GPIO_IOProvider(Pins.GPIO_PIN_D1, Pins.GPIO_PIN_D2);
         private static SensirionSHT11 SHT11 = new SensirionSHT11(SHT11_IO);
+        private static WindowShade _windowShade = new WindowShade();
 
         public static void Main()
         {
@@ -51,6 +52,21 @@ namespace Netduino.Controller
                 {
                     double humidity = SHT11.ReadRelativeHumidity(SensirionSHT11.SHT11VDD_Voltages.VDD_3_5V);
                     EthernetCommunication.SendMessage("HUMIDITY=" + humidity.ToString("F2"));
+                    break;
+                }
+                case "OPEN_WINDOW_SHADE":
+                {
+                    _windowShade.Execute(WindowShade.ShadeCommand.Open);
+                    break;
+                }
+                case "CLOSE_WINDOW_SHADE":
+                {
+                    _windowShade.Execute(WindowShade.ShadeCommand.Close);
+                    break;
+                }
+                case "STOP_WINDOW_SHADE":
+                {
+                    _windowShade.Execute(WindowShade.ShadeCommand.Stop);
                     break;
                 }
                 case "EXIT":

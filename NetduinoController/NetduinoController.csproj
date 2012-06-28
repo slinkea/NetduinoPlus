@@ -35,6 +35,8 @@
     <Compile Include="EthernetCommunication.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="Time.cs" />
+    <Compile Include="WindowShade.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MF_Sensirion_SHT11">
