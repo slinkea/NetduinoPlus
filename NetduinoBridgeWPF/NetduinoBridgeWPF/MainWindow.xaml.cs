@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Windows.Threading;
 using System.Timers;
+using MM.Monitor.Plugins;
 
 namespace NetduinoBridgeWPF
 {
@@ -16,8 +17,9 @@ namespace NetduinoBridgeWPF
     {
         private static Action<System.Action> executor = action => action();
         private CommunicateWithNetduino _ethernetCommunication = CommunicateWithNetduino.GetInstance();
-        private static System.Timers.Timer aTimer;
-        private static System.Timers.Timer aTemperatureTimer;
+        private static System.Timers.Timer _socketTimer;
+        private static System.Timers.Timer _temperatureTimer;
+        private Cloud _cloud = null;
 
 
         public MainWindow()
@@ -30,14 +32,16 @@ namespace NetduinoBridgeWPF
             _ethernetCommunication.StartListening(null);
 
             // Connect must be called after the blocking accept
-            aTimer = new System.Timers.Timer(500);
-            aTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
-            aTimer.AutoReset = false;
-            aTimer.Enabled = true;
+            _socketTimer = new System.Timers.Timer(500);
+            _socketTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
+            _socketTimer.AutoReset = false;
+            _socketTimer.Enabled = true;
 
-            aTemperatureTimer = new System.Timers.Timer(5000);
-            aTemperatureTimer.Elapsed += new ElapsedEventHandler(OnTimedTemperatureEvent);
-            aTemperatureTimer.Enabled = true;
+            _temperatureTimer = new System.Timers.Timer(5000);
+            _temperatureTimer.Elapsed += new ElapsedEventHandler(OnTimedTemperatureEvent);
+            _temperatureTimer.Enabled = true;
+
+            _cloud = new Cloud(_ethernetCommunication);
         }
 
         private void OnTimedEvent(object source, ElapsedEventArgs e)
@@ -54,6 +58,17 @@ namespace NetduinoBridgeWPF
         private void OnMessageReceived(object sender, MessageEventArgs e)
         {
             Debug.Print(e.Message);
+
+            string[] data = e.Message.Split('=');
+
+            if (data[0] == "TEMPERATURE")
+            {
+                _cloud.Temperature = data[1] + " °C";
+            }
+            else if (e.Message.Contains("HUMIDITY"))
+            {
+                _cloud.Humidity = data[1] + " %";
+            }
         }
 
         private void OnStatusUpdate(object sender, MessageEventArgs e)
