@@ -42,7 +42,7 @@ namespace NetduinoBridgeWPF
             _temperatureTimer.Elapsed += new ElapsedEventHandler(OnTimedTemperatureEvent);
             _temperatureTimer.Enabled = true;
 
-            ConnectToZWave();
+            //ConnectToZWave();
 
             _cloud = new Cloud(_ethernetCommunication);
         }
