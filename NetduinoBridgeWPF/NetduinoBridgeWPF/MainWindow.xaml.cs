@@ -72,6 +72,10 @@ namespace NetduinoBridgeWPF
             {
                 _cloud.Humidity = data[1] + " %";
             }
+            else if (e.Message.Contains("SHADE"))
+            {
+              _cloud.Shade = data[1];
+            }
         }
 
         private void OnStatusUpdate(object sender, MessageEventArgs e)

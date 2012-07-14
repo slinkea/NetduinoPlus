@@ -66,7 +66,7 @@ namespace Netduino.Communication
             {
                 _communicateWithNetduino = new CommunicateWithNetduino();
                 _communicateWithNetduino.Port = 8000;
-                _communicateWithNetduino.NetduinoAddress = "192.168.137.2";
+                _communicateWithNetduino.NetduinoAddress = "192.168.250.104";
             }
 
             return _communicateWithNetduino;

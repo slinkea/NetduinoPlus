@@ -29,6 +29,7 @@ namespace MM.Monitor.Plugins
 
         public string Temperature { get; set; }
         public string Humidity { get; set; }
+        public string Shade { get; set; }
 
         public Cloud(CommunicateWithNetduino ethernetCommunication)
         {
@@ -61,11 +62,12 @@ namespace MM.Monitor.Plugins
             Groups details = new Groups();
 
             Group firstGroup = new Group("Indoor Conditions");
-            firstGroup.Items.Add(new SimpleItem("Temperature", Temperature));
-            firstGroup.Items.Add(new SimpleItem("Humidity", Humidity));
+            string item = "Temperature: " + Temperature + "\nHumidity: " + Humidity;
+            firstGroup.Items.Add(new SimpleItem("Basement", item));
             details.Add(firstGroup);
 
             Group secondGroup = new Group("Window Shade");
+            secondGroup.Items.Add(new SimpleItem("State: ", Shade));
             secondGroup.Items.Add(new CommandItem(COMMAND_SEND_OPEN_WINDOW_SHADE, "Open"));
             secondGroup.Items.Add(new CommandItem(COMMAND_SEND_STOP_WINDOW_SHADE, "Stop"));
             secondGroup.Items.Add(new CommandItem(COMMAND_SEND_CLOSE_WINDOW_SHADE, "Close"));
