@@ -21,6 +21,14 @@ namespace MM.Monitor.Plugins
         private const int COMMAND_SEND_OPEN_WINDOW_SHADE = 5;
         private const int COMMAND_SEND_CLOSE_WINDOW_SHADE = 6;
         private const int COMMAND_SEND_STOP_WINDOW_SHADE = 7;
+        private const int COMMAND_SEND_SPRINKLER_STOP = 8;
+        private const int COMMAND_SEND_SPRINKLER_START_1 = 9;
+        private const int COMMAND_SEND_SPRINKLER_START_2 = 10;
+        private const int COMMAND_SEND_SPRINKLER_START_3 = 11;
+        private const int COMMAND_SEND_SPRINKLER_START_4 = 12;
+        private const int COMMAND_SEND_SPRINKLER_START_5 = 13;
+        private const int COMMAND_SEND_SPRINKLER_START_6 = 14;
+        private const int COMMAND_SEND_SPRINKLER_START_7 = 15;
 
         private const int PAGE_FIRST = 1;
         private const int PAGE_SECOND = 2;
@@ -61,25 +69,14 @@ namespace MM.Monitor.Plugins
 
             Groups details = new Groups();
 
-            Group firstGroup = new Group("Indoor Conditions");
+            Group group = new Group();
             string item = "Temperature: " + Temperature + "\nHumidity: " + Humidity;
-            firstGroup.Items.Add(new SimpleItem("Basement", item));
-            details.Add(firstGroup);
+            group.Items.Add(new SimpleItem("Basement", item));
 
-            Group secondGroup = new Group("Window Shade");
-            secondGroup.Items.Add(new SimpleItem("State: ", Shade));
-            secondGroup.Items.Add(new CommandItem(COMMAND_SEND_OPEN_WINDOW_SHADE, "Open"));
-            secondGroup.Items.Add(new CommandItem(COMMAND_SEND_STOP_WINDOW_SHADE, "Stop"));
-            secondGroup.Items.Add(new CommandItem(COMMAND_SEND_CLOSE_WINDOW_SHADE, "Close"));
-            /*secondGroup.Items.Add(new CommandItem(COMMAND_SEND_TEST_NOTIFICATION, "Send a test notification"));
-            secondGroup.Items.Add(new CommandItem(COMMAND_CLEAR_NOTIFICATIONS_COUNT, "Clear Notifications Count"));
-            secondGroup.Items.Add(new CommandItem(COMMAND_CLEAR_INVOCATIONS_COUNT, "Clear Details Request Count"));
-            secondGroup.Items.Add(new CommandItem(COMMAND_STOP_INSTANCE_MONITORING, "Stop", "Stop Monitoring this Instance"));*/
-            details.Add(secondGroup);
+            group.Items.Add(new PageItem(PAGE_FIRST, "Window Shade"));
+            group.Items.Add(new PageItem(PAGE_SECOND, "Sprinklers"));
 
-            /*Group thirdGroup = new Group("Pages");
-            thirdGroup.Items.Add(new PageItem(PAGE_FIRST, "Page 1", "This is a page"));            
-            details.Add(thirdGroup);*/
+            details.Add(group);
 
             MM.Monitor.Cloud.Service.Instance.SetDetails(details);
         }
@@ -87,25 +84,33 @@ namespace MM.Monitor.Plugins
         // Called when the a page is requested by the mobile application
         private void OnPageRequest(int pageId, string mobileDeviceIdentifier)
         {
-            /*Groups details = new Groups();
+            Groups details = new Groups();
 
             if (pageId == PAGE_FIRST)
             {
-                Group firstGroup = new Group("First Page Items");
-                firstGroup.Items.Add(new SimpleItem("1", "Simple Value"));
-                firstGroup.Items.Add(new CommandItem(COMMAND_SEND_TEST_NOTIFICATION, "Send a test notification"));
-                firstGroup.Items.Add(new PageItem(PAGE_SECOND, "Page 2", "This is another page"));
-                details.Add(firstGroup);
+                Group group = new Group("Window Shade");
+                group.Items.Add(new SimpleItem("State: ", Shade));
+                group.Items.Add(new CommandItem(COMMAND_SEND_OPEN_WINDOW_SHADE, "Open"));
+                group.Items.Add(new CommandItem(COMMAND_SEND_STOP_WINDOW_SHADE, "Stop"));
+                group.Items.Add(new CommandItem(COMMAND_SEND_CLOSE_WINDOW_SHADE, "Close"));
+                details.Add(group);
             }
             else if (pageId == PAGE_SECOND)
             {
-                Group firstGroup = new Group("Second Page Items");
-                firstGroup.Items.Add(new SimpleItem("2", "Simple Value"));
-                firstGroup.Items.Add(new CommandItem(COMMAND_SEND_TEST_NOTIFICATION, "Send a test notification"));
-                details.Add(firstGroup);
+                Group group = new Group("Sprinklers");
+                group.Items.Add(new SimpleItem("State: "));
+                group.Items.Add(new CommandItem(COMMAND_SEND_SPRINKLER_STOP, "Stop"));
+                group.Items.Add(new CommandItem(COMMAND_SEND_SPRINKLER_START_1, "Start Zone 1"));
+                group.Items.Add(new CommandItem(COMMAND_SEND_SPRINKLER_START_2, "Start Zone 2"));
+                group.Items.Add(new CommandItem(COMMAND_SEND_SPRINKLER_START_3, "Start Zone 3"));
+                group.Items.Add(new CommandItem(COMMAND_SEND_SPRINKLER_START_4, "Start Zone 4"));
+                group.Items.Add(new CommandItem(COMMAND_SEND_SPRINKLER_START_5, "Start Zone 5"));
+                group.Items.Add(new CommandItem(COMMAND_SEND_SPRINKLER_START_6, "Start Zone 6"));
+                group.Items.Add(new CommandItem(COMMAND_SEND_SPRINKLER_START_7, "Start Zone 7"));
+                details.Add(group);
             }
 
-            MM.Monitor.Cloud.Service.Instance.SetPageDetails(pageId, details);*/
+            MM.Monitor.Cloud.Service.Instance.SetPageDetails(pageId, details);
         }
 
         // Called when a command is executed on the mobile application
@@ -142,6 +147,39 @@ namespace MM.Monitor.Plugins
             {
                 _ethernetCommunication.SendMessage("STOP_WINDOW_SHADE");
             }
+            else if (commandId == COMMAND_SEND_SPRINKLER_STOP)
+            {
+                _ethernetCommunication.SendMessage("SPRINKLER_STOP");
+            }
+            else if (commandId == COMMAND_SEND_SPRINKLER_START_1)
+            {
+                _ethernetCommunication.SendMessage("SPRINKLER_START_1");
+            }
+            else if (commandId == COMMAND_SEND_SPRINKLER_START_2)
+            {
+                _ethernetCommunication.SendMessage("SPRINKLER_START_2");
+            }
+            else if (commandId == COMMAND_SEND_SPRINKLER_START_3)
+            {
+                _ethernetCommunication.SendMessage("SPRINKLER_START_3");
+            }
+            else if (commandId == COMMAND_SEND_SPRINKLER_START_4)
+            {
+                _ethernetCommunication.SendMessage("SPRINKLER_START_4");
+            }
+            else if (commandId == COMMAND_SEND_SPRINKLER_START_5)
+            {
+                _ethernetCommunication.SendMessage("SPRINKLER_START_5");
+            }
+            else if (commandId == COMMAND_SEND_SPRINKLER_START_6)
+            {
+                _ethernetCommunication.SendMessage("SPRINKLER_START_6");
+            }
+            else if (commandId == COMMAND_SEND_SPRINKLER_START_7)
+            {
+                _ethernetCommunication.SendMessage("SPRINKLER_START_7");
+            }
+            
         }
 
         // Called when a command is executed from a page on the mobile application
