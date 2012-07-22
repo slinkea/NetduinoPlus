@@ -103,5 +103,20 @@ namespace NetduinoBridgeWPF
         {
 
         }
+
+        private void buttonOpen_Click(object sender, RoutedEventArgs e)
+        {
+            _ethernetCommunication.SendMessage("OPEN_WINDOW_SHADE");
+        }
+
+        private void buttonStop_Click(object sender, RoutedEventArgs e)
+        {
+            _ethernetCommunication.SendMessage("STOP_WINDOW_SHADE");
+        }
+
+        private void buttonClose_Click(object sender, RoutedEventArgs e)
+        {
+            _ethernetCommunication.SendMessage("CLOSE_WINDOW_SHADE");
+        }
     }
 }
